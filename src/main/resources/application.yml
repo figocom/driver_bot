@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: driver_bot
+  devtools:
+    restart:
+      enabled: false
+fluent:
+  bot:
+    token: 7643483814:AAG1F5vtYx9qykp7083rA8DGGhkryhazjH4
+    username: https://t.me/gigant_taxi_bot
+    process-type: update
