@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.figo</groupId>
 	<artifactId>driver_bot</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<name>driver_bot</name>
 	<description>Demo project for Spring Boot</description>
 	<url/>
@@ -60,6 +60,15 @@
 			<groupId>io.github.nurislom373</groupId>
 			<artifactId>spring-boot-starter-fluent</artifactId>
 			<version>1.2.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<scope>runtime</scope>
 		</dependency>
 
 	</dependencies>

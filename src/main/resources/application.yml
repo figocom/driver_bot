@@ -4,6 +4,23 @@ spring:
   devtools:
     restart:
       enabled: false
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    url: jdbc:postgresql://localhost:5432/drivers
+    username: postgres
+    password: 123
+    hikari:
+      poolName: Hikari
+      auto-commit: false
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+    hibernate:
+      ddl-auto: update
+
 fluent:
   bot:
     token: 7643483814:AAG1F5vtYx9qykp7083rA8DGGhkryhazjH4
