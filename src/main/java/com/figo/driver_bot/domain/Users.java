@@ -32,6 +32,6 @@ public class Users {
     @Column(updatable = false, nullable = false)
     private LocalDateTime createdAt= ZonedDateTime.now(ZoneId.of("Asia/Tashkent")).toLocalDateTime();
     private LocalDateTime updatedAt;
-    private Integer updatedBy;
+    private Long updatedBy;
     private String updateAction;
 }

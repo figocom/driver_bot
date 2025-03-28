@@ -32,6 +32,6 @@ public class Plan {
     private LocalDateTime updatedAt= ZonedDateTime.now(ZoneId.of("Asia/Tashkent")).toLocalDateTime();
     @NotBlank
     @Column(nullable = false)
-    private Integer updatedBy;
+    private Long updatedBy;
     private String updateAction;
 }

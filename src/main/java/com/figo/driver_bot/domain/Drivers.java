@@ -50,6 +50,6 @@ public class Drivers {
     private LocalDateTime updatedAt;
     @NotBlank
     @Column(nullable = false)
-    private Integer updatedBy;
+    private Long updatedBy;
     private String updateAction;
 }
