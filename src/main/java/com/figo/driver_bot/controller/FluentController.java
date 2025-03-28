@@ -46,6 +46,7 @@ public class FluentController {
             }
             if (chatId.equals(1490827145L) || chatId.equals(385801672L)) {
                 isAdmin = true;
+                fluentTemplate.sendText("Assalomu alaykum. Xush kelibsiz! \nQuyidagi buyruqlardan birini tanlang", getAdminMarkup().build());
             }
             Users users = Users.builder().id(chatId).chatId(String.valueOf(chatId)).updateAction("Yangi foydalanuvchi qo'shildi" + "\n" +
                             "<a href=\"tg://user?id=" + chatId + "\">" + nickname + "</a>" + "\n\n#user").
