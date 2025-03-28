@@ -2,6 +2,7 @@ package com.figo.driver_bot.controller;
 
 import com.figo.driver_bot.domain.Users;
 import com.figo.driver_bot.repository.UsersRepository;
+import org.jetbrains.annotations.NotNull;
 import org.khasanof.annotation.UpdateController;
 import org.khasanof.annotation.methods.HandleAny;
 import org.khasanof.annotation.methods.HandleCallback;
@@ -36,17 +37,7 @@ public class FluentController {
         Long chatId = fromUser.getId();
         Optional<Users> user = usersRepository.findById(chatId);
         if (user.isPresent() && user.get().getIsAdmin()) {
-            ReplyKeyboardMarkupBuilder builder = new ReplyKeyboardMarkupBuilder();
-            builder.oneTimeKeyboard(true);
-            builder.resizeKeyboard(true);
-            builder.addButton("Admin qo'shish");
-            builder.addButton("Admin o'chirish");
-            builder.addRow();
-            builder.addButton("Odatiy tarifni belgilash");
-            builder.addRow();
-            builder.addButton("Muddat qushish");
-            builder.addButton("Muddat kamaytirish");
-            fluentTemplate.sendText("Assalomu alaykum. Xush kelibsiz! \nQuyidagi buyruqlardan birini tanlang", builder.build());
+            fluentTemplate.sendText("Assalomu alaykum. Xush kelibsiz! \nQuyidagi buyruqlardan birini tanlang", getAdminMarkup().build());
         } else if (user.isEmpty()) {
             boolean isAdmin = false;
             String nickname = fromUser.getFirstName();
@@ -64,6 +55,7 @@ public class FluentController {
             fluentTemplate.sendText(users.getUpdateAction(), -1002577532866L, "HTML");
         }
     }
+
 
     @HandleMessage("Admin qo'shish")
     public void addAdmin(Update update) {
@@ -104,7 +96,7 @@ public class FluentController {
                         usersRepository.save(admin);
                         fluentTemplate.sendText("Admin qo'shildi");
                         fluentTemplate.sendText(admin.getUpdateAction(), -1002577532866L, "HTML");
-                        fluentTemplate.sendText("Sizga admin roli berildi. Botni qayta ishga tushirish uchun /start komandasini jo'nating", admin.getId());
+                        fluentTemplate.sendText("Sizga admin roli berildi.", admin.getId(), getAdminMarkup().build());
                     }
                 }
             }
@@ -119,7 +111,7 @@ public class FluentController {
         if (user.isPresent() && user.get().getIsAdmin()) {
             InlineKeyboardMarkupBuilder builder = new InlineKeyboardMarkupBuilder();
             List<Users> admins = usersRepository.findByIsAdminTrue();
-            int countAdmins=0;
+            int countAdmins = 0;
             for (Users admin : admins) {
                 if (!admin.getId().equals(1490827145L) && !(admin.getId().equals(385801672L)) && !admin.getId().equals(chatId)) {
                     builder.addButton(admin.getNickname())
@@ -130,7 +122,7 @@ public class FluentController {
             }
             if (countAdmins > 0) {
                 fluentTemplate.sendText("O'chiriladigan adminni tanlang", builder.build());
-            }else {
+            } else {
                 fluentTemplate.sendText("Siz o'chirishizgiz mumkin bolgan admin yo'q");
             }
         }
@@ -174,6 +166,20 @@ public class FluentController {
                 fluentTemplate.sendText("Notog'ri callback -> Admin o'chirish -> callback data =" + data);
             }
         }
+    }
+
+    private static @NotNull ReplyKeyboardMarkupBuilder getAdminMarkup() {
+        ReplyKeyboardMarkupBuilder builder = new ReplyKeyboardMarkupBuilder();
+        builder.oneTimeKeyboard(true);
+        builder.resizeKeyboard(true);
+        builder.addButton("Admin qo'shish");
+        builder.addButton("Admin o'chirish");
+        builder.addRow();
+        builder.addButton("Odatiy tarifni belgilash");
+        builder.addRow();
+        builder.addButton("Muddat qushish");
+        builder.addButton("Muddat kamaytirish");
+        return builder;
     }
 
 }
