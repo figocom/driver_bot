@@ -1,8 +1,6 @@
 package com.figo.driver_bot.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
@@ -10,15 +8,14 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
-@Getter
-@Setter
+
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-@Builder
 @Entity
 public class Plan {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     @NotBlank
     @Column(nullable = false)
@@ -26,12 +23,66 @@ public class Plan {
     @NotBlank
     @Column(unique = true, nullable = false)
     private String yandexId;
-    @NotBlank
     @Column(nullable = false)
     private Boolean isCurrentActive;
-    private LocalDateTime updatedAt= ZonedDateTime.now(ZoneId.of("Asia/Tashkent")).toLocalDateTime();
-    @NotBlank
+    private LocalDateTime updatedAt = ZonedDateTime.now(ZoneId.of("Asia/Tashkent")).toLocalDateTime();
     @Column(nullable = false)
     private Long updatedBy;
     private String updateAction;
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public @NotBlank String getName() {
+        return name;
+    }
+
+    public void setName(@NotBlank String name) {
+        this.name = name;
+    }
+
+    public @NotBlank String getYandexId() {
+        return yandexId;
+    }
+
+    public void setYandexId(@NotBlank String yandexId) {
+        this.yandexId = yandexId;
+    }
+
+    public Boolean getCurrentActive() {
+        return isCurrentActive;
+    }
+
+    public void setCurrentActive(Boolean currentActive) {
+        isCurrentActive = currentActive;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public Long getUpdatedBy() {
+        return updatedBy;
+    }
+
+    public void setUpdatedBy(Long updatedBy) {
+        this.updatedBy = updatedBy;
+    }
+
+    public String getUpdateAction() {
+        return updateAction;
+    }
+
+    public void setUpdateAction(String updateAction) {
+        this.updateAction = updateAction;
+    }
 }
