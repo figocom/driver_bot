@@ -20,6 +20,7 @@ import org.telegram.telegrambots.meta.api.objects.User;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,9 +44,10 @@ public class FluentController {
     @HandleMessage("/start")
     public void start(Update update) {
         User fromUser = update.getMessage().getFrom();
+        Long id = update.getMessage().getChat().getId();
         Long chatId = fromUser.getId();
         Optional<Users> user = usersRepository.findById(chatId);
-        if (user.isPresent() && user.get().getAdmin()) {
+        if (user.isPresent() && user.get().getAdmin() && !id.equals(-1002577532866L) && !id.equals(-1002577532866L)) {
             fluentTemplate.sendText("Assalomu alaykum. Xush kelibsiz! \nQuyidagi buyruqlardan birini tanlang", getAdminMarkup().build());
         } else if (user.isEmpty()) {
             boolean isAdmin = false;
@@ -60,8 +62,7 @@ public class FluentController {
             Users users = new Users();
             users.setId(chatId);
             users.setChatId(String.valueOf(chatId));
-            users.setUpdateAction("Yangi foydalanuvchi qo'shildi" + "\n" +
-                    "<a href=\"tg://user?id=" + chatId + "\">" + nickname + "</a>" + "\n\n#user");
+            users.setUpdateAction("Yangi foydalanuvchi qo'shildi" + "\n" + "<a href=\"tg://user?id=" + chatId + "\">" + nickname + "</a>" + "\n\n#user");
             users.setNickname(nickname);
             users.setAdmin(isAdmin); // Use setAdmin instead of setIsAdmin
             users.setCreatedAt(ZonedDateTime.now(ZoneId.of("Asia/Tashkent")).toLocalDateTime());
@@ -77,8 +78,9 @@ public class FluentController {
     public void addAdmin(Update update) {
         User fromUser = update.getMessage().getFrom();
         Long chatId = fromUser.getId();
+        Long id = update.getMessage().getChat().getId();
         Optional<Users> user = usersRepository.findById(chatId);
-        if (user.isPresent() && user.get().getAdmin()) {
+        if (user.isPresent() && user.get().getAdmin() && !id.equals(-1002577532866L)) {
             fluentTemplate.sendText("Kimni admin qilmoqchisiz? Foydalanuvchining kontaktini ulashing! \nEslatma !!! \nFoydalanuvchi botga start bergan bolishi shart!");
         }
     }
@@ -92,7 +94,8 @@ public class FluentController {
         User fromUser = update.getMessage().getFrom();
         Long chatId = fromUser.getId();
         Optional<Users> user = usersRepository.findById(chatId);
-        if (user.isPresent() && user.get().getAdmin()) {
+        Long id = update.getMessage().getChat().getId();
+        if (user.isPresent() && user.get().getAdmin() && !id.equals(-1002577532866L)) {
             if (update.getMessage().hasContact()) {
                 Long newAdminId = update.getMessage().getContact().getUserId();
                 Optional<Users> newAdmin = usersRepository.findById(newAdminId);
@@ -104,9 +107,7 @@ public class FluentController {
                         fluentTemplate.sendText("Admin roli allaqachon berilgan");
                     } else {
                         admin.setAdmin(true);
-                        admin.setUpdateAction("Foydalanuvchi " + "<a href=\"tg://user?id=" + admin.getChatId() + "\">" + admin.getNickname() + "</a>" + " ga admin roli " +
-                                "<a href=\"tg://user?id=" + chatId + "\">" + user.get().getNickname() + "</a>" + " tomonidan berildi\n" + "Vaqt: " +
-                                ZonedDateTime.now(ZoneId.of("Asia/Tashkent")).toLocalDateTime().format(dateTimeFormatter) + "\n\n#admin");
+                        admin.setUpdateAction("Foydalanuvchi " + "<a href=\"tg://user?id=" + admin.getChatId() + "\">" + admin.getNickname() + "</a>" + " ga admin roli " + "<a href=\"tg://user?id=" + chatId + "\">" + user.get().getNickname() + "</a>" + " tomonidan berildi\n" + "Vaqt: " + ZonedDateTime.now(ZoneId.of("Asia/Tashkent")).toLocalDateTime().format(dateTimeFormatter) + "\n\n#admin");
                         admin.setUpdatedAt(ZonedDateTime.now(ZoneId.of("Asia/Tashkent")).toLocalDateTime());
                         admin.setUpdatedBy(chatId);
                         usersRepository.save(admin);
@@ -124,14 +125,14 @@ public class FluentController {
         User fromUser = update.getMessage().getFrom();
         Long chatId = fromUser.getId();
         Optional<Users> user = usersRepository.findById(chatId);
-        if (user.isPresent() && user.get().getAdmin()) {
+        Long id = update.getMessage().getChat().getId();
+        if (user.isPresent() && user.get().getAdmin() && !id.equals(-1002577532866L)) {
             InlineKeyboardMarkupBuilder builder = new InlineKeyboardMarkupBuilder();
             List<Users> admins = usersRepository.findByIsAdminTrue();
             int countAdmins = 0;
             for (Users admin : admins) {
                 if (!admin.getId().equals(1490827145L) && !(admin.getId().equals(385801672L)) && !admin.getId().equals(chatId)) {
-                    builder.addButton(admin.getNickname())
-                            .callbackData("del:" + admin.getId());
+                    builder.addButton(admin.getNickname()).callbackData("del:" + admin.getId());
                     builder.addRow();
                     countAdmins++;
                 }
@@ -161,9 +162,7 @@ public class FluentController {
                         Users admin = newAdmin.get();
                         if (admin.getAdmin()) {
                             admin.setAdmin(false);
-                            admin.setUpdateAction("Foydalanuvchi " + "<a href=\"tg://user?id=" + admin.getChatId() + "\">" + admin.getNickname() + "</a>" + " dan admin roli " +
-                                    "<a href=\"tg://user?id=" + chatId + "\">" + user.get().getNickname() + "</a>" + " tomonidan olindi\n" + "Vaqt: " +
-                                    ZonedDateTime.now(ZoneId.of("Asia/Tashkent")).toLocalDateTime().format(dateTimeFormatter) + "\n\n#admin");
+                            admin.setUpdateAction("Foydalanuvchi " + "<a href=\"tg://user?id=" + admin.getChatId() + "\">" + admin.getNickname() + "</a>" + " dan admin roli " + "<a href=\"tg://user?id=" + chatId + "\">" + user.get().getNickname() + "</a>" + " tomonidan olindi\n" + "Vaqt: " + ZonedDateTime.now(ZoneId.of("Asia/Tashkent")).toLocalDateTime().format(dateTimeFormatter) + "\n\n#admin");
                             admin.setUpdatedAt(ZonedDateTime.now(ZoneId.of("Asia/Tashkent")).toLocalDateTime());
                             admin.setUpdatedBy(chatId);
                             usersRepository.save(admin);
@@ -189,15 +188,15 @@ public class FluentController {
         User fromUser = update.getMessage().getFrom();
         Long chatId = fromUser.getId();
         Optional<Users> user = usersRepository.findById(chatId);
-        if (user.isPresent() && user.get().getAdmin()) {
+        Long id = update.getMessage().getChat().getId();
+        if (user.isPresent() && user.get().getAdmin() && !id.equals(-1002577532866L)) {
             List<YandexPlanDto> plans = yandexService.getTariffList();
             plans = plans.stream().filter(YandexPlanDto::isIs_enabled).toList();
             if (!plans.isEmpty()) {
                 InlineKeyboardMarkupBuilder builder = new InlineKeyboardMarkupBuilder();
                 for (YandexPlanDto plan : plans) {
                     if (plan.isIs_enabled()) {
-                        builder.addButton(plan.getName())
-                                .callbackData("ap:" + plan.getId());
+                        builder.addButton(plan.getName()).callbackData("ap:" + plan.getId());
                         builder.addRow();
                     }
                 }
@@ -226,14 +225,13 @@ public class FluentController {
                         entity.setCurrentActive(false); // Set the currentActive flag
                     }
                     YandexPlanDto yandexPlanDto = planDto.get();
-                    Plan plan   = new Plan();
+                    Plan plan = new Plan();
                     plan.setName(yandexPlanDto.getName());
                     plan.setCurrentActive(true);
                     plan.setYandexId(planId);
                     plan.setUpdatedBy(chatId);
                     plan.setUpdatedAt(ZonedDateTime.now(ZoneId.of("Asia/Tashkent")).toLocalDateTime());
-                    plan.setUpdateAction("Doimiy tarif sifatida "+ yandexPlanDto.getName() + " tarifi " +   "<a href=\"tg://user?id=" + chatId + "\">" + user.get().getNickname() + "</a>" + " tomonidan tanlandi\n" + "Vaqt: " +
-                            ZonedDateTime.now(ZoneId.of("Asia/Tashkent")).toLocalDateTime().format(dateTimeFormatter) + "\n\n#tarif");
+                    plan.setUpdateAction("Doimiy tarif sifatida " + yandexPlanDto.getName() + " tarifi " + "<a href=\"tg://user?id=" + chatId + "\">" + user.get().getNickname() + "</a>" + " tomonidan tanlandi\n" + "Vaqt: " + ZonedDateTime.now(ZoneId.of("Asia/Tashkent")).toLocalDateTime().format(dateTimeFormatter) + "\n\n#tarif");
                     entities.add(plan);
                     planRepository.saveAll(entities);
                     fluentTemplate.deleteMessage(update.getCallbackQuery().getMessage().getMessageId());
@@ -244,6 +242,64 @@ public class FluentController {
         }
     }
 
+    @HandleMessage("Muddat belgilash")
+    public void choiceTariffForDriver(Update update) {
+        User fromUser = update.getMessage().getFrom();
+        Long chatId = fromUser.getId();
+        Long id = update.getMessage().getChat().getId();
+        Optional<Users> user = usersRepository.findById(chatId);
+        if (user.isPresent() && user.get().getAdmin() && !id.equals(-1002577532866L)) {
+            fluentTemplate.sendText("Haydovchi pozivnoy raqami va kunlar sonini kiriting. Agar muddat qo'shmoqchi bo'lsangiz pozivnoy raqam+kunlar soni aksi bolsa pozivnoy raqam - kunlar soni. \nNamuna: 123456+30 \nyoki: 123456-1");
+        }
+    }
+
+    @HandleMessage(value = "^\\d+\\s*[\\+\\-]\\s*\\d+$", match = MatchType.REGEX)
+    public void choiceTariffForDriver2(Update update) {
+        User fromUser = update.getMessage().getFrom();
+        Long chatId = fromUser.getId();
+        Long id = update.getMessage().getChat().getId();
+        Optional<Users> user = usersRepository.findById(chatId);
+        if (user.isPresent() && user.get().getAdmin() && !id.equals(-1002577532866L)) {
+            List<YandexPlanDto> plans = yandexService.getTariffList();
+            plans = plans.stream().filter(YandexPlanDto::isIs_enabled).toList();
+            String callbackDef = "+";
+            if (update.getMessage().getText().contains("-")) {
+                callbackDef = "-";
+            }
+            if (!plans.isEmpty()) {
+                InlineKeyboardMarkupBuilder builder = new InlineKeyboardMarkupBuilder();
+                for (YandexPlanDto plan : plans) {
+                    if (plan.isIs_enabled()) {
+                        builder.addButton(plan.getName()).callbackData("dap" + callbackDef + plan.getId() + callbackDef + update.getMessage().getText().trim());
+                        builder.addRow();
+                    }
+                }
+                fluentTemplate.sendText("Tarif tanlang", builder.build());
+            } else {
+                fluentTemplate.sendText("Yandex tizimida tarif mavjud emas iltimos yangi tarif qushing");
+            }
+        }
+    }
+
+    @HandleCallback(value = {"dap"}, match = MatchType.STARTS_WITH)
+    public void choiceTariffForDriver3(Update update) {
+        User fromUser = update.getCallbackQuery().getFrom();
+        Long chatId = fromUser.getId();
+        Optional<Users> user = usersRepository.findById(chatId);
+        if (user.isPresent() && user.get().getAdmin()) {
+            String data = update.getCallbackQuery().getData();
+            String callbackDef = "+";
+            if (data.contains("-")) {
+                callbackDef = "-";
+            }
+            String[] split = data.split("\\" + callbackDef);
+            String planId = split[1].trim();
+            String driverId = split[2].trim();
+            String day = split[3].trim();
+            fluentTemplate.deleteMessage(update.getCallbackQuery().getMessage().getMessageId());
+            System.out.println(Arrays.toString(split));
+        }
+    }
 }
 
 

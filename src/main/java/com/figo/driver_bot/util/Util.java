@@ -14,8 +14,7 @@ public class Util {
         builder.addRow();
         builder.addButton("Odatiy tarifni belgilash");
         builder.addRow();
-        builder.addButton("Muddat qushish");
-        builder.addButton("Muddat kamaytirish");
+        builder.addButton("Muddat belgilash");
         return builder;
     }
 }
