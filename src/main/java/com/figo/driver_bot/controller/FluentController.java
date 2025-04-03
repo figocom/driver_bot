@@ -326,7 +326,6 @@ public class FluentController {
             fields.put("park", List.of());
             requestDTO.setFields(fields);
             DriverQueryResponseDTO driverProfiles = driverProfileService.getDriverProfiles(requestDTO);
-            System.out.println(driverProfiles);
             Drivers drivers = new Drivers();
             List<DriverQueryResponseDTO.DriverProfile> driverProfiles1 = driverProfiles.getDriverProfiles();
             Optional<DriverQueryResponseDTO.DriverProfile> profile = driverProfiles1.stream().filter(driverProfile1 -> {
