@@ -13,12 +13,12 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class YandexApiClient {
+public class PlanApiService {
 
     private final RestTemplate restTemplate;
     private static final String API_URL = "https://fleet-api.taxi.yandex.net/v1/parks/driver-work-rules?park_id=42a72aafd8ad403c9858452306872db7";
 
-    public YandexApiClient(RestTemplate restTemplate) {
+    public PlanApiService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 

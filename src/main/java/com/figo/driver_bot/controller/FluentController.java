@@ -1,10 +1,15 @@
 package com.figo.driver_bot.controller;
 
+import com.figo.driver_bot.domain.Drivers;
 import com.figo.driver_bot.domain.Plan;
 import com.figo.driver_bot.domain.Users;
+import com.figo.driver_bot.dto.DriverQueryRequestDTO;
+import com.figo.driver_bot.dto.DriverQueryResponseDTO;
 import com.figo.driver_bot.dto.YandexPlanDto;
+import com.figo.driver_bot.repository.DriversRepository;
 import com.figo.driver_bot.repository.PlanRepository;
 import com.figo.driver_bot.repository.UsersRepository;
+import com.figo.driver_bot.service.DriverProfileService;
 import com.figo.driver_bot.service.YandexService;
 import org.khasanof.annotation.UpdateController;
 import org.khasanof.annotation.methods.HandleAny;
@@ -17,12 +22,13 @@ import org.khasanof.utils.keyboards.reply.ReplyKeyboardMarkupBuilder;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalField;
+import java.util.*;
 
 import static com.figo.driver_bot.util.Util.getAdminMarkup;
 
@@ -32,13 +38,17 @@ public class FluentController {
     private final UsersRepository usersRepository;
     private final YandexService yandexService;
     private final PlanRepository planRepository;
+    private final DriverProfileService driverProfileService;
+    private final DriversRepository driversRepository;
     private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
-    public FluentController(FluentTemplate fluentTemplate, UsersRepository usersRepository, YandexService yandexService, PlanRepository planRepository) {
+    public FluentController(FluentTemplate fluentTemplate, UsersRepository usersRepository, YandexService yandexService, PlanRepository planRepository, DriverProfileService driverProfileService, DriversRepository driversRepository) {
         this.fluentTemplate = fluentTemplate;
         this.usersRepository = usersRepository;
         this.yandexService = yandexService;
         this.planRepository = planRepository;
+        this.driverProfileService = driverProfileService;
+        this.driversRepository = driversRepository;
     }
 
     @HandleMessage("/start")
@@ -292,14 +302,124 @@ public class FluentController {
             if (data.contains("-")) {
                 callbackDef = "-";
             }
+            LocalDateTime currentTime = ZonedDateTime.now(ZoneId.of("Asia/Tashkent")).toLocalDateTime();
             String[] split = data.split("\\" + callbackDef);
             String planId = split[1].trim();
             String driverId = split[2].trim();
             String day = split[3].trim();
             fluentTemplate.deleteMessage(update.getCallbackQuery().getMessage().getMessageId());
-            System.out.println(Arrays.toString(split));
+            DriverQueryRequestDTO requestDTO = new DriverQueryRequestDTO();
+
+            DriverQueryRequestDTO.Query query = new DriverQueryRequestDTO.Query();
+            DriverQueryRequestDTO.Park park = new DriverQueryRequestDTO.Park();
+            DriverQueryRequestDTO.DriverProfile driverProfile = new DriverQueryRequestDTO.DriverProfile();
+
+            // Set values
+            park.setId("42a72aafd8ad403c9858452306872db7");
+            driverProfile.setWorkStatus(List.of("working"));
+            park.setDriverProfile(driverProfile);
+
+            query.setPark(park);
+            query.setText(driverId);
+
+            requestDTO.setQuery(query);
+
+            // Set fields
+            Map<String, List<String>> fields = new HashMap<>();
+            fields.put("car", List.of("callsign"));
+            fields.put("driver_profile", List.of("driver_license"));
+            fields.put("account", List.of());
+            fields.put("driver_license", List.of("number"));
+            fields.put("current_status", List.of());
+            fields.put("park", List.of());
+
+            requestDTO.setFields(fields);
+            DriverQueryResponseDTO driverProfiles = driverProfileService.getDriverProfiles(requestDTO);
+            Drivers drivers = new Drivers();
+            List<DriverQueryResponseDTO.DriverProfile> driverProfiles1 = driverProfiles.getDriverProfiles();
+            Optional<DriverQueryResponseDTO.DriverProfile> profile = driverProfiles1.stream().filter(driverProfile1 -> driverProfile1.getCar().getCallsign().equals(driverId)).findFirst();
+            if (profile.isPresent()) {
+                DriverQueryResponseDTO.DriverProfile profile1 = profile.get();
+                String driverCardNumber = profile1.getDriverProfile().getDriverLicense().getNumber();
+                Optional<Drivers> driversOptional = driversRepository.findByDriverCardNumber(driverCardNumber);
+                if (driversOptional.isEmpty()) {
+                    if (callbackDef.equals("-")) {
+                        fluentTemplate.sendText("Bunday amal bajarib bolmaydi");
+                        return;
+                    }
+                    drivers.setDriverId(profile1.getDriverProfile().getId());
+                    drivers.setDriverCardNumber(driverCardNumber);
+                    drivers.setUpdatedAt(currentTime);
+                    drivers.setUpdatedBy(chatId);
+                    drivers.setStartedAt(currentTime);
+                    try {
+                        long addedDays = Long.parseLong(day.trim());
+                        drivers.setEndWill(currentTime.plusDays(addedDays));
+                    } catch (NumberFormatException e) {
+                        fluentTemplate.sendText("Qushiladigan kun raqam korinishda emas");
+                        return;
+                    }
+                    List<Plan> planList = planRepository.findByIsCurrentActiveTrue();
+                    if (planList.isEmpty()) {
+                        fluentTemplate.sendText("Odatiy tarif belgilanmagan. Iltimos odatiy tarifni tanlang");
+                        return;
+                    }
+                    Plan plan = planList.getFirst();
+                    List<YandexPlanDto> tariffList = yandexService.getTariffList();
+                    Optional<YandexPlanDto> planDto = tariffList.stream().filter(yandexPlanDto -> yandexPlanDto.getId().equals(planId)).findFirst();
+                    if (planDto.isEmpty()) {
+                        fluentTemplate.sendText("Tarif mavjud emas");
+                        return;
+                    }
+                    drivers.setCurrentPlan(planDto.get().getName());
+                    drivers.setCurrentPlanId(planId);
+                    drivers.setNextPlan(plan.getName());
+                    drivers.setNextPlanId(plan.getYandexId());
+                    drivers.setUpdateAction("Haydovchi uchun tariff belgilandi \nPrava raqami: " + drivers.getDriverCardNumber() + "\nPozivnoy raqam: " + driverId
+                            + "\nYoqilgan tarif: " + drivers.getCurrentPlan() + "\nAmal qilish muddati: " + drivers.getEndWill() + "gacha." + "\nKeyingi tariff: " + drivers.getNextPlan()
+                            + "Bajargan Admin: <a href=\"tg://user?id=" + chatId + "\">" + user.get().getNickname() + "</a>"
+                            + "Bajarilgan vaqt: " + drivers.getUpdatedAt() + "\n\n #plan");
+                } else {
+                    drivers = driversOptional.get();
+                    if (!planId.equals(drivers.getCurrentPlanId())) {
+                        fluentTemplate.sendText("Haydovchi hozirda " + drivers.getCurrentPlan() + " tarifida . Faqat shu tarif uchun kun qoshish yoki kamaytirish mumkin");
+                        return;
+                    } else {
+                        drivers.setUpdatedBy(chatId);
+                        drivers.setUpdatedAt(currentTime);
+                        long addedDays = 0L;
+                        try {
+                            addedDays = Long.parseLong(day.trim());
+                        } catch (NumberFormatException e) {
+                            fluentTemplate.sendText("Qushiladigan kun raqam korinishda emas");
+                            return;
+                        }
+                        if (callbackDef.equals("-")) {
+                            LocalDateTime curr = drivers.getEndWill().minusDays(addedDays);
+                            long daysBetween = ChronoUnit.DAYS.between(curr.toLocalDate(), currentTime.toLocalDate());
+                            if (daysBetween > 0) {
+                                fluentTemplate.sendText("Siz " + daysBetween + " kun kamaytirishingiz mumkin");
+                                return;
+                            }
+                            drivers.setEndWill(curr.minusDays(addedDays));
+                            drivers.setUpdateAction("Haydovchi uchun tariff muddati o'zgartirildi \nPrava raqami: " + drivers.getDriverCardNumber() + "\nPozivnoy raqam: " + driverId
+                                    + "\nUzaytirilgan tarif: " + drivers.getCurrentPlan() + "\nAmal qilish muddati: " + drivers.getEndWill() + "gacha uzaytirildi." + "\nKeyingi tariff: " + drivers.getNextPlan()
+                                    + "Bajargan Admin: <a href=\"tg://user?id=" + chatId + "\">" + user.get().getNickname() + "</a>"
+                                    + "Bajarilgan vaqt: " + drivers.getUpdatedAt() + "\n\n #plan");
+                        } else {
+                            drivers.setEndWill(drivers.getEndWill().plusDays(addedDays));
+                            drivers.setUpdateAction("Haydovchi uchun tariff muddati o'zgartirildi \nPrava raqami: " + drivers.getDriverCardNumber() + "\nPozivnoy raqam: " + driverId
+                                    + "\nKamaytirilgan tarif: " + drivers.getCurrentPlan() + "\nAmal qilish muddati: " + drivers.getEndWill() + "gacha Kamaytirildi." + "\nKeyingi tariff: " + drivers.getNextPlan()
+                                    + "Bajargan Admin: <a href=\"tg://user?id=" + chatId + "\">" + user.get().getNickname() + "</a>"
+                                    + "Bajarilgan vaqt: " + drivers.getUpdatedAt() + "\n\n #plan");
+                        }
+                    }
+                }
+                driversRepository.save(drivers);
+                fluentTemplate.sendText("Haydovchi uchun tarif belgilandi");
+                fluentTemplate.sendText(drivers.getUpdateAction(), -1002577532866L, "HTML");
+            }
+            fluentTemplate.sendText("Haydovchi topilmadi");
         }
     }
 }
-
-

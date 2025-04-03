@@ -1,9 +1,7 @@
 package com.figo.driver_bot.domain;
 
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
@@ -19,6 +17,7 @@ import java.time.ZonedDateTime;
 @Entity
 public class Drivers {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     @NotBlank
     @Column(unique = true, nullable = false)
@@ -31,13 +30,13 @@ public class Drivers {
     private String currentPlan;
     @NotBlank
     @Column(nullable = false)
-    private Integer currentPlanId;
+    private String currentPlanId;
     @NotBlank
     @Column(nullable = false)
     private String nextPlan;
     @NotBlank
     @Column(nullable = false)
-    private Integer nextPlanId;
+    private String nextPlanId;
     @NotBlank
     @Column(nullable = false)
     private LocalDateTime startedAt= ZonedDateTime.now(ZoneId.of("Asia/Tashkent")).toLocalDateTime();

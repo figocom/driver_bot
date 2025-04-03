@@ -8,9 +8,9 @@ import java.util.List;
 
 @Service
 public class YandexService {
-    private final YandexApiClient yandexApiClient;
+    private final PlanApiService yandexApiClient;
 
-    public YandexService(YandexApiClient yandexApiClient) {
+    public YandexService(PlanApiService yandexApiClient) {
         this.yandexApiClient = yandexApiClient;
     }
 
