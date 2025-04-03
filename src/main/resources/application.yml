@@ -3,7 +3,7 @@ spring:
     name: driver_bot
   devtools:
     restart:
-      enabled: true
+      enabled: false
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
     url: jdbc:postgresql://localhost:5432/drivers

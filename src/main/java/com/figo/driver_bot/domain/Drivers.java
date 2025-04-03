@@ -32,18 +32,15 @@ public class Drivers {
     @NotBlank
     @Column(nullable = false)
     private String nextPlanId;
-    @NotBlank
     @Column(nullable = false)
     private LocalDateTime startedAt= ZonedDateTime.now(ZoneId.of("Asia/Tashkent")).toLocalDateTime();
-    @NotBlank
     @Column(nullable = false)
     private LocalDateTime endWill;
-    @NotBlank
     @Column(nullable = false)
     private LocalDateTime updatedAt;
-    @NotBlank
     @Column(nullable = false)
     private Long updatedBy;
+    @Column(length = 1000)
     private String updateAction;
 
     public Drivers() {
@@ -120,35 +117,35 @@ public class Drivers {
         this.nextPlanId = nextPlanId;
     }
 
-    public @NotBlank LocalDateTime getStartedAt() {
+    public LocalDateTime getStartedAt() {
         return startedAt;
     }
 
-    public void setStartedAt(@NotBlank LocalDateTime startedAt) {
+    public void setStartedAt(LocalDateTime startedAt) {
         this.startedAt = startedAt;
     }
 
-    public @NotBlank LocalDateTime getEndWill() {
+    public LocalDateTime getEndWill() {
         return endWill;
     }
 
-    public void setEndWill(@NotBlank LocalDateTime endWill) {
+    public void setEndWill(LocalDateTime endWill) {
         this.endWill = endWill;
     }
 
-    public @NotBlank LocalDateTime getUpdatedAt() {
+    public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(@NotBlank LocalDateTime updatedAt) {
+    public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
 
-    public @NotBlank Long getUpdatedBy() {
+    public Long getUpdatedBy() {
         return updatedBy;
     }
 
-    public void setUpdatedBy(@NotBlank Long updatedBy) {
+    public void setUpdatedBy(Long updatedBy) {
         this.updatedBy = updatedBy;
     }
 

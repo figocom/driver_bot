@@ -262,7 +262,7 @@ public class FluentController {
         }
     }
 
-    @HandleMessage(value = "^\\d+\\s*[\\+\\-]\\s*\\d+$", match = MatchType.REGEX)
+    @HandleMessage(value = "\\w+\\s*\\d+\\s*[\\+\\-]\\s*\\d+$", match = MatchType.REGEX)
     public void choiceTariffForDriver2(Update update) {
         User fromUser = update.getMessage().getFrom();
         Long chatId = fromUser.getId();
@@ -326,9 +326,17 @@ public class FluentController {
             fields.put("park", List.of());
             requestDTO.setFields(fields);
             DriverQueryResponseDTO driverProfiles = driverProfileService.getDriverProfiles(requestDTO);
+            System.out.println(driverProfiles);
             Drivers drivers = new Drivers();
             List<DriverQueryResponseDTO.DriverProfile> driverProfiles1 = driverProfiles.getDriverProfiles();
-            Optional<DriverQueryResponseDTO.DriverProfile> profile = driverProfiles1.stream().filter(driverProfile1 -> driverProfile1.getCar().getCallsign().equals(driverId)).findFirst();
+            Optional<DriverQueryResponseDTO.DriverProfile> profile = driverProfiles1.stream().filter(driverProfile1 -> {
+                if (driverProfile1 != null) {
+                    if (driverProfile1.getCar()!=null) {
+                        return driverProfile1.getCar().getCallsign().equals(driverId);
+                    }
+                }
+                return false;
+            }).findFirst();
             if (profile.isPresent()) {
                 DriverQueryResponseDTO.DriverProfile profile1 = profile.get();
                 String driverCardNumber = profile1.getDriverProfile().getDriverLicense().getNumber();
@@ -389,26 +397,28 @@ public class FluentController {
                             LocalDateTime curr = drivers.getEndWill().minusDays(addedDays);
                             long daysBetween = ChronoUnit.DAYS.between(curr.toLocalDate(), currentTime.toLocalDate());
                             if (daysBetween > 0) {
-                                fluentTemplate.sendText("Siz " + daysBetween + " kun kamaytirishingiz mumkin");
+                                fluentTemplate.sendText("Siz " + daysBetween + " kun kamaytirishingiz mumkin emas!");
                                 return;
                             }
-                            drivers.setEndWill(curr.minusDays(addedDays));
+                            drivers.setEndWill(curr);
                             drivers.setUpdateAction("Haydovchi uchun tariff muddati o'zgartirildi \nPrava raqami: " + drivers.getDriverCardNumber() + "\nPozivnoy raqam: " + driverId
-                                    + "\nUzaytirilgan tarif: " + drivers.getCurrentPlan() + "\nAmal qilish muddati: " + drivers.getEndWill() + "gacha uzaytirildi." + "\nKeyingi tariff: " + drivers.getNextPlan()
-                                    + "Bajargan Admin: <a href=\"tg://user?id=" + chatId + "\">" + user.get().getNickname() + "</a>"
-                                    + "Bajarilgan vaqt: " + drivers.getUpdatedAt() + "\n\n #plan");
+                                    + "\nKamaytirilgan tarif: " + drivers.getCurrentPlan() + "\nAmal qilish muddati: " + drivers.getEndWill().toLocalDate() + " gacha kamaytirildi." + "\nKeyingi tariff: " + drivers.getNextPlan()
+                                    + "\nBajargan Admin: <a href=\"tg://user?id=" + chatId + "\">" + user.get().getNickname() + "</a>"
+                                    + "\nBajarilgan vaqt: " + drivers.getUpdatedAt().toLocalDate() + "\n\n #plan");
                         } else {
+
                             drivers.setEndWill(drivers.getEndWill().plusDays(addedDays));
                             drivers.setUpdateAction("Haydovchi uchun tariff muddati o'zgartirildi \nPrava raqami: " + drivers.getDriverCardNumber() + "\nPozivnoy raqam: " + driverId
-                                    + "\nKamaytirilgan tarif: " + drivers.getCurrentPlan() + "\nAmal qilish muddati: " + drivers.getEndWill() + "gacha Kamaytirildi." + "\nKeyingi tariff: " + drivers.getNextPlan()
-                                    + "Bajargan Admin: <a href=\"tg://user?id=" + chatId + "\">" + user.get().getNickname() + "</a>"
-                                    + "Bajarilgan vaqt: " + drivers.getUpdatedAt() + "\n\n #plan");
+                                    + "\nUzaytirilgan tarif: " + drivers.getCurrentPlan() + "\nAmal qilish muddati: " + drivers.getEndWill().toLocalDate() + " gacha uzaytirildi." + "\nKeyingi tariff: " + drivers.getNextPlan()
+                                    + "\nBajargan Admin: <a href=\"tg://user?id=" + chatId + "\">" + user.get().getNickname() + "</a>"
+                                    + "\nBajarilgan vaqt: " + drivers.getUpdatedAt().toLocalDate() + "\n\n #plan");
                         }
                     }
                 }
                 driversRepository.save(drivers);
                 fluentTemplate.sendText("Haydovchi uchun tarif belgilandi");
                 fluentTemplate.sendText(drivers.getUpdateAction(), -1002577532866L, "HTML");
+                return;
             }
             fluentTemplate.sendText("Haydovchi topilmadi");
         }

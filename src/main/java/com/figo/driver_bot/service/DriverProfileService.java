@@ -21,9 +21,9 @@ public class DriverProfileService {
     public DriverQueryResponseDTO getDriverProfiles(DriverQueryRequestDTO request) {
         // Headers
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Accept-Language", "en-US");
+        headers.set("Accept-Language", "RU");
         headers.set("X-Client-ID", "taxi/park/42a72aafd8ad403c9858452306872db7");
-        headers.set("X-API-Key", "YMEWPiDCVlCShctdnqkKaEWmTwVZKGFuqDQMw");
+        headers.set("X-API-Key", "YMEWPiDCvICShctdnqkKaEWmTwIVZKGFuqDQMw");
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         // Request entity
