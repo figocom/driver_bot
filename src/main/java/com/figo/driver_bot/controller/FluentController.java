@@ -5,11 +5,13 @@ import com.figo.driver_bot.domain.Plan;
 import com.figo.driver_bot.domain.Users;
 import com.figo.driver_bot.dto.DriverQueryRequestDTO;
 import com.figo.driver_bot.dto.DriverQueryResponseDTO;
+import com.figo.driver_bot.dto.GetOneDriverResponse;
 import com.figo.driver_bot.dto.YandexPlanDto;
 import com.figo.driver_bot.repository.DriversRepository;
 import com.figo.driver_bot.repository.PlanRepository;
 import com.figo.driver_bot.repository.UsersRepository;
 import com.figo.driver_bot.service.DriverProfileService;
+import com.figo.driver_bot.service.DriverUpdateService;
 import com.figo.driver_bot.service.YandexService;
 import org.khasanof.annotation.UpdateController;
 import org.khasanof.annotation.methods.HandleAny;
@@ -19,6 +21,8 @@ import org.khasanof.enums.MatchType;
 import org.khasanof.service.template.FluentTemplate;
 import org.khasanof.utils.keyboards.inline.InlineKeyboardMarkupBuilder;
 import org.khasanof.utils.keyboards.reply.ReplyKeyboardMarkupBuilder;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 
@@ -39,15 +43,17 @@ public class FluentController {
     private final PlanRepository planRepository;
     private final DriverProfileService driverProfileService;
     private final DriversRepository driversRepository;
+    private final DriverUpdateService driverUpdateService;
     private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
-    public FluentController(FluentTemplate fluentTemplate, UsersRepository usersRepository, YandexService yandexService, PlanRepository planRepository, DriverProfileService driverProfileService, DriversRepository driversRepository) {
+    public FluentController(FluentTemplate fluentTemplate, UsersRepository usersRepository, YandexService yandexService, PlanRepository planRepository, DriverProfileService driverProfileService, DriversRepository driversRepository, DriverUpdateService driverUpdateService) {
         this.fluentTemplate = fluentTemplate;
         this.usersRepository = usersRepository;
         this.yandexService = yandexService;
         this.planRepository = planRepository;
         this.driverProfileService = driverProfileService;
         this.driversRepository = driversRepository;
+        this.driverUpdateService = driverUpdateService;
     }
 
     @HandleMessage("/start")
@@ -90,11 +96,11 @@ public class FluentController {
         Long id = update.getMessage().getChat().getId();
         Optional<Users> user = usersRepository.findById(chatId);
         if (user.isPresent() && user.get().getAdmin() && !id.equals(-1002577532866L)) {
-            fluentTemplate.sendText("Kimni admin qilmoqchisiz? Foydalanuvchining kontaktini ulashing! \nEslatma !!! \nFoydalanuvchi botga start bergan bolishi shart!");
+            fluentTemplate.sendText("Kimni admin qilmoqchisiz? Foydalanuvchining id sini id:12345678 shu korinishda yuboring \nMasalan->id:1235689 \nEslatma !!! \nFoydalanuvchi botga start bergan bolishi shart!");
         }
     }
 
-    @HandleAny
+    @HandleMessage(value = "id:", match = MatchType.STARTS_WITH)
     public void addAdminProcess(Update update) {
         boolean hasMessage = update.hasMessage();
         if (!hasMessage) {
@@ -105,25 +111,33 @@ public class FluentController {
         Optional<Users> user = usersRepository.findById(chatId);
         Long id = update.getMessage().getChat().getId();
         if (user.isPresent() && user.get().getAdmin() && !id.equals(-1002577532866L)) {
-            if (update.getMessage().hasContact()) {
-                Long newAdminId = update.getMessage().getContact().getUserId();
-                Optional<Users> newAdmin = usersRepository.findById(newAdminId);
-                if (newAdmin.isEmpty()) {
-                    fluentTemplate.sendText("Foydalanuvchilar royxatida bunday contact mavjud emas! \nFoydalanuvchi botga start bergan bolishi shart!");
-                } else {
-                    Users admin = newAdmin.get();
-                    if (admin.getAdmin()) {
-                        fluentTemplate.sendText("Admin roli allaqachon berilgan");
+            if (update.getMessage().hasText()) {
+                String text = update.getMessage().getText();
+                String[] split = text.split(":");
+                String newId = split[1];
+                try {
+                    Long newAdminId = Long.parseLong(newId);
+                    Optional<Users> newAdmin = usersRepository.findById(newAdminId);
+                    if (newAdmin.isEmpty()) {
+                        fluentTemplate.sendText("Foydalanuvchilar royxatida bunday contact mavjud emas! \nFoydalanuvchi botga start bergan bolishi shart!");
                     } else {
-                        admin.setAdmin(true);
-                        admin.setUpdateAction("Foydalanuvchi " + "<a href=\"tg://user?id=" + admin.getChatId() + "\">" + admin.getNickname() + "</a>" + " ga admin roli " + "<a href=\"tg://user?id=" + chatId + "\">" + user.get().getNickname() + "</a>" + " tomonidan berildi\n" + "Vaqt: " + ZonedDateTime.now(ZoneId.of("Asia/Tashkent")).toLocalDateTime().format(dateTimeFormatter) + "\n\n#admin");
-                        admin.setUpdatedAt(ZonedDateTime.now(ZoneId.of("Asia/Tashkent")).toLocalDateTime());
-                        admin.setUpdatedBy(chatId);
-                        usersRepository.save(admin);
-                        fluentTemplate.sendText("Admin qo'shildi");
-                        fluentTemplate.sendText(admin.getUpdateAction(), -1002577532866L, "HTML");
-                        fluentTemplate.sendText("Sizga admin roli berildi.", admin.getId(), getAdminMarkup().build());
+                        Users admin = newAdmin.get();
+                        if (admin.getAdmin()) {
+                            fluentTemplate.sendText("Admin roli allaqachon berilgan");
+                        } else {
+                            admin.setAdmin(true);
+                            admin.setUpdateAction("Foydalanuvchi " + "<a href=\"tg://user?id=" + admin.getChatId() + "\">" + admin.getNickname() + "</a>" + " ga admin roli " + "<a href=\"tg://user?id=" + chatId + "\">" + user.get().getNickname() + "</a>" + " tomonidan berildi\n" + "Vaqt: " + ZonedDateTime.now(ZoneId.of("Asia/Tashkent")).toLocalDateTime().format(dateTimeFormatter) + "\n\n#admin");
+                            admin.setUpdatedAt(ZonedDateTime.now(ZoneId.of("Asia/Tashkent")).toLocalDateTime());
+                            admin.setUpdatedBy(chatId);
+                            usersRepository.save(admin);
+                            fluentTemplate.sendText("Admin qo'shildi");
+                            fluentTemplate.sendText(admin.getUpdateAction(), -1002577532866L, "HTML");
+                            fluentTemplate.sendText("Sizga admin roli berildi.", admin.getId(), getAdminMarkup().build());
+                        }
                     }
+                } catch (NumberFormatException e) {
+                    fluentTemplate.sendText("Notogri id berildi");
+                    return;
                 }
             }
         }
@@ -229,10 +243,7 @@ public class FluentController {
                 List<YandexPlanDto> plans = yandexService.getTariffList();
                 Optional<YandexPlanDto> planDto = plans.stream().filter(yandexPlanDto -> yandexPlanDto.getId().equals(planId)).findFirst();
                 if (planDto.isPresent()) {
-                    List<Plan> entities = planRepository.findAll(); // Retrieve all entities (for example, from DB)
-                    for (Plan entity : entities) {
-                        entity.setCurrentActive(false); // Set the currentActive flag
-                    }
+                      planRepository.deleteAll(); // Set the currentActive flag
                     YandexPlanDto yandexPlanDto = planDto.get();
                     Plan plan = new Plan();
                     plan.setName(yandexPlanDto.getName());
@@ -241,8 +252,7 @@ public class FluentController {
                     plan.setUpdatedBy(chatId);
                     plan.setUpdatedAt(ZonedDateTime.now(ZoneId.of("Asia/Tashkent")).toLocalDateTime());
                     plan.setUpdateAction("Doimiy tarif sifatida " + yandexPlanDto.getName() + " tarifi " + "<a href=\"tg://user?id=" + chatId + "\">" + user.get().getNickname() + "</a>" + " tomonidan tanlandi\n" + "Vaqt: " + ZonedDateTime.now(ZoneId.of("Asia/Tashkent")).toLocalDateTime().format(dateTimeFormatter) + "\n\n#tarif");
-                    entities.add(plan);
-                    planRepository.saveAll(entities);
+                    planRepository.save(plan);
                     fluentTemplate.deleteMessage(update.getCallbackQuery().getMessage().getMessageId());
                     fluentTemplate.sendText("Doimiy tarif tanlandi");
                     fluentTemplate.sendText(plan.getUpdateAction(), -1002577532866L, "HTML");
@@ -330,7 +340,7 @@ public class FluentController {
             List<DriverQueryResponseDTO.DriverProfile> driverProfiles1 = driverProfiles.getDriverProfiles();
             Optional<DriverQueryResponseDTO.DriverProfile> profile = driverProfiles1.stream().filter(driverProfile1 -> {
                 if (driverProfile1 != null) {
-                    if (driverProfile1.getCar()!=null) {
+                    if (driverProfile1.getCar() != null) {
                         return driverProfile1.getCar().getCallsign().equals(driverId);
                     }
                 }
@@ -346,6 +356,7 @@ public class FluentController {
                         return;
                     }
                     drivers.setDriverId(profile1.getDriverProfile().getId());
+                    GetOneDriverResponse oneDriver = driverUpdateService.getOneDriver(drivers.getDriverId());
                     drivers.setDriverCardNumber(driverCardNumber);
                     drivers.setUpdatedAt(currentTime);
                     drivers.setUpdatedBy(chatId);
@@ -362,11 +373,18 @@ public class FluentController {
                         fluentTemplate.sendText("Odatiy tarif belgilanmagan. Iltimos odatiy tarifni tanlang");
                         return;
                     }
-                    Plan plan = planList.getFirst();
+                    Plan plan = planList.get(0);
                     List<YandexPlanDto> tariffList = yandexService.getTariffList();
                     Optional<YandexPlanDto> planDto = tariffList.stream().filter(yandexPlanDto -> yandexPlanDto.getId().equals(planId)).findFirst();
                     if (planDto.isEmpty()) {
                         fluentTemplate.sendText("Tarif mavjud emas");
+                        return;
+                    }
+                    oneDriver.getAccount().setWorkRuleId(planId);
+                    ResponseEntity<String> updated = driverUpdateService.updateDriverProfile(oneDriver, drivers.getDriverId());
+                    if (updated.getStatusCode() != HttpStatus.NO_CONTENT) {
+                        fluentTemplate.sendText("Error http from yandex: " + updated.getBody() + "\n\n #error", -1002577532866L);
+                        fluentTemplate.sendText("Error http from yandex");
                         return;
                     }
                     drivers.setCurrentPlan(planDto.get().getName());
@@ -422,3 +440,5 @@ public class FluentController {
         }
     }
 }
+
+//9985006d5e2e444dba817faaebd02bbe

@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotBlank;
+
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -18,10 +19,9 @@ public class Users {
     private String chatId;
     private String username;
     private String nickname;
-    @NotBlank
+
     @Column(nullable = false)
     private Boolean isAdmin = false;
-    @NotBlank
     @Column(updatable = false, nullable = false)
     private LocalDateTime createdAt = ZonedDateTime.now(ZoneId.of("Asia/Tashkent")).toLocalDateTime();
     private LocalDateTime updatedAt;
@@ -76,19 +76,19 @@ public class Users {
         this.nickname = nickname;
     }
 
-    public @NotBlank Boolean getAdmin() {
+    public Boolean getAdmin() {
         return isAdmin;
     }
 
-    public void setAdmin(@NotBlank Boolean admin) {
+    public void setAdmin(Boolean admin) {
         isAdmin = admin;
     }
 
-    public @NotBlank LocalDateTime getCreatedAt() {
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(@NotBlank LocalDateTime createdAt) {
+    public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
 
