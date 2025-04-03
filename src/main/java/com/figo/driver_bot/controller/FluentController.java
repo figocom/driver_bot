@@ -262,7 +262,7 @@ public class FluentController {
         }
     }
 
-    @HandleMessage(value = "\\w+\\s*\\d+\\s*[\\+\\-]\\s*\\d+$", match = MatchType.REGEX)
+    @HandleMessage(value = "\\w+[\\+\\-]\\s*\\d+$", match = MatchType.REGEX)
     public void choiceTariffForDriver2(Update update) {
         User fromUser = update.getMessage().getFrom();
         Long chatId = fromUser.getId();
@@ -374,9 +374,9 @@ public class FluentController {
                     drivers.setNextPlan(plan.getName());
                     drivers.setNextPlanId(plan.getYandexId());
                     drivers.setUpdateAction("Haydovchi uchun tariff belgilandi \nPrava raqami: " + drivers.getDriverCardNumber() + "\nPozivnoy raqam: " + driverId
-                            + "\nYoqilgan tarif: " + drivers.getCurrentPlan() + "\nAmal qilish muddati: " + drivers.getEndWill() + "gacha." + "\nKeyingi tariff: " + drivers.getNextPlan()
-                            + "Bajargan Admin: <a href=\"tg://user?id=" + chatId + "\">" + user.get().getNickname() + "</a>"
-                            + "Bajarilgan vaqt: " + drivers.getUpdatedAt() + "\n\n #plan");
+                            + "\nYoqilgan tarif: " + drivers.getCurrentPlan() + "\nAmal qilish muddati: " + drivers.getEndWill().toLocalDate() + "gacha." + "\nKeyingi tariff: " + drivers.getNextPlan()
+                            + "\nBajargan Admin: <a href=\"tg://user?id=" + chatId + "\">" + user.get().getNickname() + "</a>"
+                            + "\nBajarilgan vaqt: " + drivers.getUpdatedAt().toLocalDate() + "\n\n #plan");
                 } else {
                     drivers = driversOptional.get();
                     if (!planId.equals(drivers.getCurrentPlanId())) {
@@ -405,7 +405,6 @@ public class FluentController {
                                     + "\nBajargan Admin: <a href=\"tg://user?id=" + chatId + "\">" + user.get().getNickname() + "</a>"
                                     + "\nBajarilgan vaqt: " + drivers.getUpdatedAt().toLocalDate() + "\n\n #plan");
                         } else {
-
                             drivers.setEndWill(drivers.getEndWill().plusDays(addedDays));
                             drivers.setUpdateAction("Haydovchi uchun tariff muddati o'zgartirildi \nPrava raqami: " + drivers.getDriverCardNumber() + "\nPozivnoy raqam: " + driverId
                                     + "\nUzaytirilgan tarif: " + drivers.getCurrentPlan() + "\nAmal qilish muddati: " + drivers.getEndWill().toLocalDate() + " gacha uzaytirildi." + "\nKeyingi tariff: " + drivers.getNextPlan()
