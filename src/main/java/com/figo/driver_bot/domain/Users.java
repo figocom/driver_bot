@@ -4,16 +4,11 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotBlank;
-import lombok.*;
-
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 
-@AllArgsConstructor
-@NoArgsConstructor
-@ToString
 @Entity
 public class Users {
     @Id
@@ -25,13 +20,29 @@ public class Users {
     private String nickname;
     @NotBlank
     @Column(nullable = false)
-    private Boolean isAdmin=false;
+    private Boolean isAdmin = false;
     @NotBlank
     @Column(updatable = false, nullable = false)
-    private LocalDateTime createdAt= ZonedDateTime.now(ZoneId.of("Asia/Tashkent")).toLocalDateTime();
+    private LocalDateTime createdAt = ZonedDateTime.now(ZoneId.of("Asia/Tashkent")).toLocalDateTime();
     private LocalDateTime updatedAt;
     private Long updatedBy;
     private String updateAction;
+
+    public Users() {
+    }
+
+    public Users(Long id, String chatId, String username, String nickname, Boolean isAdmin, LocalDateTime createdAt,
+                 LocalDateTime updatedAt, Long updatedBy, String updateAction) {
+        this.id = id;
+        this.chatId = chatId;
+        this.username = username;
+        this.nickname = nickname;
+        this.isAdmin = isAdmin;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.updatedBy = updatedBy;
+        this.updateAction = updateAction;
+    }
 
     public Long getId() {
         return id;
@@ -103,5 +114,20 @@ public class Users {
 
     public void setUpdateAction(String updateAction) {
         this.updateAction = updateAction;
+    }
+
+    @Override
+    public String toString() {
+        return "Users{" +
+                "id=" + id +
+                ", chatId='" + chatId + '\'' +
+                ", username='" + username + '\'' +
+                ", nickname='" + nickname + '\'' +
+                ", isAdmin=" + isAdmin +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                ", updatedBy=" + updatedBy +
+                ", updateAction='" + updateAction + '\'' +
+                '}';
     }
 }

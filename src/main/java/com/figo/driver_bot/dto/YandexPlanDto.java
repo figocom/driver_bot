@@ -1,14 +1,20 @@
 package com.figo.driver_bot.dto;
 
-import lombok.*;
 
 
-@AllArgsConstructor
-@NoArgsConstructor
 public class YandexPlanDto {
     private String id;
     private String name;
     private boolean is_enabled;
+
+    public YandexPlanDto() {
+    }
+
+    public YandexPlanDto(String id, String name, boolean is_enabled) {
+        this.id = id;
+        this.name = name;
+        this.is_enabled = is_enabled;
+    }
 
     public String getId() {
         return id;

@@ -2,16 +2,11 @@ package com.figo.driver_bot.domain;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import lombok.*;
-
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 
-@AllArgsConstructor
-@NoArgsConstructor
-@ToString
 @Entity
 public class Plan {
     @Id
@@ -29,6 +24,19 @@ public class Plan {
     @Column(nullable = false)
     private Long updatedBy;
     private String updateAction;
+
+    public Plan() {
+    }
+
+    public Plan(Integer id, String name, String yandexId, Boolean isCurrentActive, LocalDateTime updatedAt, Long updatedBy, String updateAction) {
+        this.id = id;
+        this.name = name;
+        this.yandexId = yandexId;
+        this.isCurrentActive = isCurrentActive;
+        this.updatedAt = updatedAt;
+        this.updatedBy = updatedBy;
+        this.updateAction = updateAction;
+    }
 
     public Integer getId() {
         return id;
@@ -84,5 +92,18 @@ public class Plan {
 
     public void setUpdateAction(String updateAction) {
         this.updateAction = updateAction;
+    }
+
+    @Override
+    public String toString() {
+        return "Plan{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", yandexId='" + yandexId + '\'' +
+                ", isCurrentActive=" + isCurrentActive +
+                ", updatedAt=" + updatedAt +
+                ", updatedBy=" + updatedBy +
+                ", updateAction='" + updateAction + '\'' +
+                '}';
     }
 }

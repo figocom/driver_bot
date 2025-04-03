@@ -308,22 +308,15 @@ public class FluentController {
             String day = split[3].trim();
             fluentTemplate.deleteMessage(update.getCallbackQuery().getMessage().getMessageId());
             DriverQueryRequestDTO requestDTO = new DriverQueryRequestDTO();
-
             DriverQueryRequestDTO.Query query = new DriverQueryRequestDTO.Query();
             DriverQueryRequestDTO.Park park = new DriverQueryRequestDTO.Park();
             DriverQueryRequestDTO.DriverProfile driverProfile = new DriverQueryRequestDTO.DriverProfile();
-
-            // Set values
             park.setId("42a72aafd8ad403c9858452306872db7");
             driverProfile.setWorkStatus(List.of("working"));
             park.setDriverProfile(driverProfile);
-
             query.setPark(park);
             query.setText(driverId);
-
             requestDTO.setQuery(query);
-
-            // Set fields
             Map<String, List<String>> fields = new HashMap<>();
             fields.put("car", List.of("callsign"));
             fields.put("driver_profile", List.of("driver_license"));
@@ -331,7 +324,6 @@ public class FluentController {
             fields.put("driver_license", List.of("number"));
             fields.put("current_status", List.of());
             fields.put("park", List.of());
-
             requestDTO.setFields(fields);
             DriverQueryResponseDTO driverProfiles = driverProfileService.getDriverProfiles(requestDTO);
             Drivers drivers = new Drivers();
