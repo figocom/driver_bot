@@ -13,7 +13,6 @@ public class Util {
         builder.addButton("Admin o'chirish");
         builder.addRow();
         builder.addButton("Odatiy tarifni belgilash");
-        builder.addRow();
         builder.addButton("Muddat belgilash");
         return builder;
     }

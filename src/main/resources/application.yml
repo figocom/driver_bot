@@ -6,7 +6,7 @@ spring:
       enabled: false
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:postgresql://localhost:5433/drivers
+    url: jdbc:postgresql://localhost:5432/drivers
     username: postgres
     password: 123
     hikari:
@@ -23,6 +23,6 @@ spring:
 
 fluent:
   bot:
-    token: 7643483814:AAG1F5vtYx9qykp7083rA8DGGhkryhazjH4
-    username: https://t.me/gigant_taxi_bot
+    token: 8038388220:AAEFSQU4GZYVVWFk8IYaLoDRHD2AaaYjJ44
+    username: https://t.me/GIGANT_UZBOT
     process-type: update
